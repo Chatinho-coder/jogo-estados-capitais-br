@@ -36,6 +36,14 @@ Jogo educativo web (pt-BR) para aprender **estados e capitais do Brasil** com ma
 - `npm run build`
 - `npm run test`
 
+## Design refresh
+- Interface redesenhada com linguagem visual premium e minimalista inspirada em produtos Apple.
+- Novo design system com escala de espaçamento, tipografia mais consistente, radii/sombras coesos e paleta neutra com um acento azul.
+- Componentes modernizados: botões, campos, selects, chips de status, barra de progresso e cartões de revisão.
+- Container do mapa refinado com destaque de estado mais elegante e transições suaves.
+- Melhorias de acessibilidade: foco visível, contraste aprimorado, microinterações discretas e responsividade otimizada para larguras de iPhone.
+- Suporte automático a dark mode via `prefers-color-scheme`.
+
 ## Próximos passos
 - Adicionar áudio de pronúncia de estados/capitais.
 - Implementar trilhas de aprendizagem por região.

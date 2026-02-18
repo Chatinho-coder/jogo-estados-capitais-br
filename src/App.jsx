@@ -15,6 +15,27 @@ function getOptions(current, key) {
   return shuffle([current[key], ...shuffle(STATES_DATA.filter((s) => s.uf !== current.uf)).slice(0, 3).map((s) => s[key])])
 }
 
+function GameHeader({ score, streak, errors, index, total }) {
+  return (
+    <header className="hero panel">
+      <div>
+        <p className="eyebrow">GeoMestre Brasil</p>
+        <h1>Estados e capitais, com foco e clareza</h1>
+        <p className="muted">Visual refinado, respostas rápidas e revisão inteligente para memorizar com consistência.</p>
+      </div>
+      <div className="hud" aria-label="Indicadores de jogo">
+        <span className="chip"><strong>{score}</strong><small>pontos</small></span>
+        <span className="chip"><strong>{streak}</strong><small>sequência</small></span>
+        <span className="chip"><strong>{errors}/{MAX_ERRORS}</strong><small>erros</small></span>
+        <span className="chip"><strong>{Math.min(index + 1, total)}</strong><small>rodada</small></span>
+      </div>
+      <div className="progress" role="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={Math.min(index, total)}>
+        <span style={{ width: `${(Math.min(index, total) / total) * 100}%` }} />
+      </div>
+    </header>
+  )
+}
+
 export default function App() {
   const [mode, setMode] = useState('menu')
   const [difficulty, setDifficulty] = useState('facil')
@@ -38,8 +59,16 @@ export default function App() {
   const capitalSuggestions = useMemo(() => STATES_DATA.filter((s) => includesNormalized(capitalAnswer, s.capital)).slice(0, 6), [capitalAnswer])
 
   function resetGame(newMode = 'menu') {
-    setQueue(shuffle(STATES_DATA)); setIndex(0); setScore(0); setStreak(0); setErrors(0); setFeedback(''); setWrongAnswers([])
-    setStateAnswer(''); setCapitalAnswer(''); setMode(newMode)
+    setQueue(shuffle(STATES_DATA))
+    setIndex(0)
+    setScore(0)
+    setStreak(0)
+    setErrors(0)
+    setFeedback('')
+    setWrongAnswers([])
+    setStateAnswer('')
+    setCapitalAnswer('')
+    setMode(newMode)
   }
 
   function submitRound() {
@@ -63,55 +92,153 @@ export default function App() {
       setIndex((i) => i + 1)
       setStateAnswer('')
       setCapitalAnswer('')
-    }, 600)
+    }, 450)
   }
 
   if (mode === 'menu') {
-    return <main className="container"><h1>GeoMestre Brasil</h1><p>Aprenda estados e capitais com mapa interativo e desafios progressivos.</p>
-      <div className="card"><h2>Escolha o modo</h2>
-        <button onClick={() => resetGame('game')}>Jogar</button>
-        <button onClick={() => setMode('study')}>Modo estudo</button>
-      </div></main>
+    return (
+      <main className="container">
+        <section className="hero panel">
+          <p className="eyebrow">GeoMestre Brasil</p>
+          <h1>Geografia do Brasil com elegância e precisão</h1>
+          <p className="muted">Treine estados e capitais em uma experiência limpa, acessível e focada em aprendizado real.</p>
+          <div className="actions-row">
+            <button className="btn btn-primary" onClick={() => resetGame('game')}>Iniciar jogo</button>
+            <button className="btn btn-secondary" onClick={() => setMode('study')}>Modo estudo</button>
+          </div>
+        </section>
+      </main>
+    )
   }
 
   if (mode === 'study') {
-    return <main className="container"><h1>Modo estudo</h1><p>Clique no estado para ver nome e capital.</p>
-      <BrazilMap focusable onStateClick={(name) => { const s = STATES_BY_NAME[name]; setFeedback(`${name}: capital ${s?.capital ?? '—'}`) }} />
-      <p className="feedback">{feedback || 'Dica: use TAB para focar e Enter para selecionar um estado.'}</p>
-      {wrongAnswers.length > 0 && <div className="card"><h3>Flashcards de revisão (erros recentes)</h3>{wrongAnswers.map((w, i) => <p key={i}><strong>{w.estado}</strong> → {w.capital}</p>)}</div>}
-      <button onClick={() => setMode('menu')}>Voltar</button></main>
+    return (
+      <main className="container">
+        <section className="panel">
+          <p className="eyebrow">Modo estudo</p>
+          <h1>Explore o mapa com calma</h1>
+          <p className="muted">Clique (ou use Tab + Enter) em um estado para visualizar a capital.</p>
+          <div className="map-panel">
+            <BrazilMap
+              focusable
+              onStateClick={(name) => {
+                const s = STATES_BY_NAME[name]
+                setFeedback(`${name}: capital ${s?.capital ?? '—'}`)
+              }}
+            />
+          </div>
+          <p className="feedback" aria-live="polite">{feedback || 'Dica de acessibilidade: navegue pelos estados com Tab e confirme com Enter.'}</p>
+        </section>
+
+        {wrongAnswers.length > 0 && (
+          <section className="panel">
+            <h2>Revisão rápida</h2>
+            <div className="review-grid">
+              {wrongAnswers.map((w, i) => (
+                <p key={`${w.estado}-${i}`} className="review-item"><strong>{w.estado}</strong><span>{w.capital}</span></p>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <div className="actions-row">
+          <button className="btn btn-secondary" onClick={() => setMode('menu')}>Voltar ao menu</button>
+          <button className="btn btn-primary" onClick={() => resetGame('game')}>Jogar agora</button>
+        </div>
+      </main>
+    )
   }
 
   if (ended) {
-    return <main className="container"><h1>Fim de jogo</h1><div className="card"><p>Pontuação final: <strong>{score}</strong></p><p>Maior sequência: <strong>{streak}</strong></p><p>Erros: <strong>{errors}</strong> / {MAX_ERRORS}</p>
-    <h3>Resumo pedagógico</h3>{wrongAnswers.length ? wrongAnswers.map((w, i) => <p key={i}>{w.estado} — {w.capital}</p>) : <p>Sem erros. Excelente!</p>}</div>
-    <button onClick={() => resetGame('game')}>Jogar novamente</button> <button onClick={() => setMode('study')}>Revisar no modo estudo</button></main>
+    return (
+      <main className="container">
+        <section className="panel">
+          <p className="eyebrow">Resultado final</p>
+          <h1>Fim de jogo</h1>
+          <div className="review-grid summary-grid">
+            <p className="review-item"><strong>Pontuação</strong><span>{score}</span></p>
+            <p className="review-item"><strong>Maior sequência</strong><span>{streak}</span></p>
+            <p className="review-item"><strong>Erros</strong><span>{errors} / {MAX_ERRORS}</span></p>
+          </div>
+          <h2>Resumo pedagógico</h2>
+          <div className="review-grid">
+            {wrongAnswers.length ? wrongAnswers.map((w, i) => (
+              <p key={`${w.estado}-${i}`} className="review-item"><strong>{w.estado}</strong><span>{w.capital}</span></p>
+            )) : <p className="muted">Sem erros. Excelente desempenho.</p>}
+          </div>
+          <div className="actions-row">
+            <button className="btn btn-primary" onClick={() => resetGame('game')}>Jogar novamente</button>
+            <button className="btn btn-secondary" onClick={() => setMode('study')}>Revisar no estudo</button>
+          </div>
+        </section>
+      </main>
+    )
   }
 
   return (
     <main className="container">
-      <h1>GeoMestre Brasil</h1>
-      <div className="hud"><span>Pontos: {score}</span><span>Sequência: {streak}</span><span>Erros: {errors}/{MAX_ERRORS}</span></div>
-      <label>Dificuldade: <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)}><option value="facil">Fácil (múltipla escolha)</option><option value="medio">Médio (assistido)</option><option value="dificil">Difícil (livre)</option></select></label>
-      <BrazilMap highlightedState={current?.estado} />
-      <section className="card">
-        <h2>Rodada {index + 1}</h2>
-        <p>Qual é o estado destacado e qual a sua capital?</p>
+      <GameHeader score={score} streak={streak} errors={errors} index={index} total={queue.length} />
 
-        {difficulty === 'facil' ? <>
-          <label>Estado: <select value={stateAnswer} onChange={(e) => setStateAnswer(e.target.value)}><option value="">Selecione...</option>{stateOptions.map((o) => <option key={o}>{o}</option>)}</select></label>
-          <label>Capital: <select value={capitalAnswer} onChange={(e) => setCapitalAnswer(e.target.value)}><option value="">Selecione...</option>{capitalOptions.map((o) => <option key={o}>{o}</option>)}</select></label>
-        </> : <>
-          <label>Estado: <input value={stateAnswer} onChange={(e) => setStateAnswer(e.target.value)} list={difficulty === 'medio' ? 'estados-list' : undefined} /></label>
-          <label>Capital: <input value={capitalAnswer} onChange={(e) => setCapitalAnswer(e.target.value)} list={difficulty === 'medio' ? 'capitais-list' : undefined} /></label>
-          <datalist id="estados-list">{stateSuggestions.map((s) => <option key={s.uf} value={s.estado} />)}</datalist>
-          <datalist id="capitais-list">{capitalSuggestions.map((s) => <option key={s.capital} value={s.capital} />)}</datalist>
-        </>}
+      <section className="panel">
+        <div className="topline">
+          <h2>Rodada {index + 1}</h2>
+          <label className="inline-field" htmlFor="difficulty-select">
+            Dificuldade
+            <select id="difficulty-select" value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
+              <option value="facil">Fácil (múltipla escolha)</option>
+              <option value="medio">Médio (assistido)</option>
+              <option value="dificil">Difícil (livre)</option>
+            </select>
+          </label>
+        </div>
 
-        <button onClick={submitRound} disabled={!normalizeText(stateAnswer) || !normalizeText(capitalAnswer)}>Confirmar</button>
+        <p className="muted">Qual é o estado destacado e qual a sua capital?</p>
+
+        <div className="map-panel">
+          <BrazilMap highlightedState={current?.estado} />
+        </div>
+
+        <div className="fields-grid">
+          {difficulty === 'facil' ? (
+            <>
+              <label>
+                Estado
+                <select value={stateAnswer} onChange={(e) => setStateAnswer(e.target.value)}>
+                  <option value="">Selecione...</option>
+                  {stateOptions.map((o) => <option key={o}>{o}</option>)}
+                </select>
+              </label>
+              <label>
+                Capital
+                <select value={capitalAnswer} onChange={(e) => setCapitalAnswer(e.target.value)}>
+                  <option value="">Selecione...</option>
+                  {capitalOptions.map((o) => <option key={o}>{o}</option>)}
+                </select>
+              </label>
+            </>
+          ) : (
+            <>
+              <label>
+                Estado
+                <input value={stateAnswer} onChange={(e) => setStateAnswer(e.target.value)} list={difficulty === 'medio' ? 'estados-list' : undefined} />
+              </label>
+              <label>
+                Capital
+                <input value={capitalAnswer} onChange={(e) => setCapitalAnswer(e.target.value)} list={difficulty === 'medio' ? 'capitais-list' : undefined} />
+              </label>
+              <datalist id="estados-list">{stateSuggestions.map((s) => <option key={s.uf} value={s.estado} />)}</datalist>
+              <datalist id="capitais-list">{capitalSuggestions.map((s) => <option key={s.capital} value={s.capital} />)}</datalist>
+            </>
+          )}
+        </div>
+
+        <div className="actions-row">
+          <button className="btn btn-primary" onClick={submitRound} disabled={!normalizeText(stateAnswer) || !normalizeText(capitalAnswer)}>Confirmar resposta</button>
+          <button className="btn btn-secondary" onClick={() => setMode('study')}>Modo estudo</button>
+        </div>
+
         <p className="feedback" aria-live="polite">{feedback}</p>
       </section>
-      <button onClick={() => setMode('study')}>Ir para modo estudo</button>
     </main>
   )
 }
