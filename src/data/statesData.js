@@ -1,0 +1,31 @@
+export const STATES_DATA = [
+  { uf: 'AC', estado: 'Acre', capital: 'Rio Branco', dica: 'ACre lembra ARROZ BRANCO → Rio Branco.' },
+  { uf: 'AL', estado: 'Alagoas', capital: 'Maceió', dica: 'ALAGOAS rima com “LAGOA”, mas a capital é Maceió.' },
+  { uf: 'AP', estado: 'Amapá', capital: 'Macapá', dica: 'Amapá e Macapá: quase gêmeas no nome.' },
+  { uf: 'AM', estado: 'Amazonas', capital: 'Manaus', dica: 'No Amazonas, a capital é Manaus (zona franca).' },
+  { uf: 'BA', estado: 'Bahia', capital: 'Salvador', dica: 'Bahia tem Salvador como porta histórica do Brasil.' },
+  { uf: 'CE', estado: 'Ceará', capital: 'Fortaleza', dica: 'Ceará → Fortaleza (cidade forte no nome).' },
+  { uf: 'DF', estado: 'Distrito Federal', capital: 'Brasília', dica: 'DF é o coração político: Brasília.' },
+  { uf: 'ES', estado: 'Espírito Santo', capital: 'Vitória', dica: 'Espírito Santo vence com Vitória.' },
+  { uf: 'GO', estado: 'Goiás', capital: 'Goiânia', dica: 'Goiás e Goiânia compartilham a raiz “Goi”.' },
+  { uf: 'MA', estado: 'Maranhão', capital: 'São Luís', dica: 'Maranhão: ilha histórica de São Luís.' },
+  { uf: 'MT', estado: 'Mato Grosso', capital: 'Cuiabá', dica: 'Mato Grosso e calor de Cuiabá.' },
+  { uf: 'MS', estado: 'Mato Grosso do Sul', capital: 'Campo Grande', dica: 'MS: Campo Grande é a capital “grande” do centro-oeste.' },
+  { uf: 'MG', estado: 'Minas Gerais', capital: 'Belo Horizonte', dica: 'Minas tem horizonte belo em BH.' },
+  { uf: 'PA', estado: 'Pará', capital: 'Belém', dica: 'No Pará, o Círio acontece em Belém.' },
+  { uf: 'PB', estado: 'Paraíba', capital: 'João Pessoa', dica: 'Paraíba → João Pessoa (JP).' },
+  { uf: 'PR', estado: 'Paraná', capital: 'Curitiba', dica: 'Paraná é terra de Curitiba.' },
+  { uf: 'PE', estado: 'Pernambuco', capital: 'Recife', dica: 'Pernambuco e os recifes de Recife.' },
+  { uf: 'PI', estado: 'Piauí', capital: 'Teresina', dica: 'Piauí termina com “í”; a capital é Teresina.' },
+  { uf: 'RJ', estado: 'Rio de Janeiro', capital: 'Rio de Janeiro', dica: 'No RJ, estado e capital têm o mesmo nome.' },
+  { uf: 'RN', estado: 'Rio Grande do Norte', capital: 'Natal', dica: 'No Norte do RN, “nasce” Natal.' },
+  { uf: 'RS', estado: 'Rio Grande do Sul', capital: 'Porto Alegre', dica: 'No Sul, o porto é Alegre.' },
+  { uf: 'RO', estado: 'Rondônia', capital: 'Porto Velho', dica: 'Rondônia: porto mais velho, Porto Velho.' },
+  { uf: 'RR', estado: 'Roraima', capital: 'Boa Vista', dica: 'Roraima tem uma Boa Vista do norte.' },
+  { uf: 'SC', estado: 'Santa Catarina', capital: 'Florianópolis', dica: 'Santa Catarina: ilha de Florianópolis.' },
+  { uf: 'SP', estado: 'São Paulo', capital: 'São Paulo', dica: 'Em SP, estado e capital têm o mesmo nome.' },
+  { uf: 'SE', estado: 'Sergipe', capital: 'Aracaju', dica: 'Sergipe no litoral: Aracaju.' },
+  { uf: 'TO', estado: 'Tocantins', capital: 'Palmas', dica: 'Tocantins bate palmas para Palmas.' }
+]
+
+export const STATES_BY_NAME = Object.fromEntries(STATES_DATA.map((s) => [s.estado, s]))

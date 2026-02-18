@@ -1,0 +1,15 @@
+:root { color-scheme: light; font-family: Inter, system-ui, sans-serif; }
+body { margin: 0; background: #f4f7fb; color: #10233d; }
+.container { max-width: 1000px; margin: 0 auto; padding: 1rem; display: grid; gap: 1rem; }
+.card { background: white; border-radius: 12px; padding: 1rem; box-shadow: 0 6px 18px #00000014; }
+button, select, input { padding: .6rem .8rem; border-radius: 8px; border: 1px solid #9ab0c9; margin: .25rem 0; }
+button { background: #005bbb; color: #fff; border: none; cursor: pointer; }
+button:focus-visible, select:focus-visible, input:focus-visible, .estado:focus-visible { outline: 3px solid #ffbf47; outline-offset: 2px; }
+.mapa { width: 100%; max-height: 65vh; background: #e8f0fa; border-radius: 12px; }
+.estado { fill: #90a7bf; stroke: #f5f8fc; stroke-width: 0.8; cursor: pointer; transition: .2s; }
+.estado:hover { fill: #5f87b4; }
+.estado.destacado { fill: #f6c244; stroke: #8a5f00; stroke-width: 1.4; }
+.hud { display: flex; gap: 1rem; flex-wrap: wrap; font-weight: 600; }
+.feedback { min-height: 1.5rem; font-weight: 600; }
+label { display: grid; gap: .25rem; }
+@media (max-width: 700px) { .container { padding: .75rem; } }
