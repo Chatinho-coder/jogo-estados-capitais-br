@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import './App.css'
 import { BrazilMap } from './components/BrazilMap'
 import { STATES_DATA, STATES_BY_NAME } from './data/statesData'
@@ -17,11 +17,9 @@ function getOptions(current, key) {
 
 function GameHeader({ score, streak, errors, index, total }) {
   return (
-    <header className="hero panel">
+    <header className="hero panel game-hero">
       <div>
         <p className="eyebrow">GeoMestre Brasil</p>
-        <h1>Estados e capitais, com foco e clareza</h1>
-        <p className="muted">Visual refinado, respostas rápidas e revisão inteligente para memorizar com consistência.</p>
       </div>
       <div className="hud" aria-label="Indicadores de jogo">
         <span className="chip"><strong>{score}</strong><small>pontos</small></span>
@@ -33,6 +31,31 @@ function GameHeader({ score, streak, errors, index, total }) {
         <span style={{ width: `${(Math.min(index, total) / total) * 100}%` }} />
       </div>
     </header>
+  )
+}
+
+function OptionButtons({ label, options, value, onChange }) {
+  return (
+    <fieldset className="option-group">
+      <legend>{label}</legend>
+      <div className="option-buttons" role="radiogroup" aria-label={label}>
+        {options.map((o) => {
+          const selected = value === o
+          return (
+            <button
+              type="button"
+              key={o}
+              role="radio"
+              aria-checked={selected}
+              className={`option-btn ${selected ? 'is-selected' : ''}`}
+              onClick={() => onChange(o)}
+            >
+              {o}
+            </button>
+          )
+        })}
+      </div>
+    </fieldset>
   )
 }
 
@@ -48,6 +71,8 @@ export default function App() {
   const [wrongAnswers, setWrongAnswers] = useState([])
   const [stateAnswer, setStateAnswer] = useState('')
   const [capitalAnswer, setCapitalAnswer] = useState('')
+  const [showSettings, setShowSettings] = useState(false)
+  const [showOptions, setShowOptions] = useState(false)
 
   const current = queue[index]
   const ended = errors >= MAX_ERRORS || index >= queue.length
@@ -57,6 +82,11 @@ export default function App() {
 
   const stateSuggestions = useMemo(() => STATES_DATA.filter((s) => includesNormalized(stateAnswer, s.estado)).slice(0, 6), [stateAnswer])
   const capitalSuggestions = useMemo(() => STATES_DATA.filter((s) => includesNormalized(capitalAnswer, s.capital)).slice(0, 6), [capitalAnswer])
+
+  useEffect(() => {
+    document.body.classList.toggle('game-active', mode === 'game' && !ended)
+    return () => document.body.classList.remove('game-active')
+  }, [mode, ended])
 
   function resetGame(newMode = 'menu') {
     setQueue(shuffle(STATES_DATA))
@@ -68,6 +98,8 @@ export default function App() {
     setWrongAnswers([])
     setStateAnswer('')
     setCapitalAnswer('')
+    setShowOptions(false)
+    setShowSettings(false)
     setMode(newMode)
   }
 
@@ -176,45 +208,29 @@ export default function App() {
   }
 
   return (
-    <main className="container">
+    <main className="container game-container">
       <GameHeader score={score} streak={streak} errors={errors} index={index} total={queue.length} />
 
-      <section className="panel">
+      <section className="panel game-panel">
         <div className="topline">
           <h2>Rodada {index + 1}</h2>
-          <label className="inline-field" htmlFor="difficulty-select">
-            Dificuldade
-            <select id="difficulty-select" value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
-              <option value="facil">Fácil (múltipla escolha)</option>
-              <option value="medio">Médio (assistido)</option>
-              <option value="dificil">Difícil (livre)</option>
-            </select>
-          </label>
+          <div className="topline-actions">
+            <button className="btn btn-secondary" onClick={() => setShowSettings(true)}>Configurações</button>
+            <button className="btn btn-secondary" onClick={() => setShowOptions(true)}>Opções</button>
+          </div>
         </div>
 
         <p className="muted">Qual é o estado destacado e qual a sua capital?</p>
 
-        <div className="map-panel">
+        <div className="map-panel game-map-panel">
           <BrazilMap highlightedState={current?.estado} />
         </div>
 
         <div className="fields-grid">
           {difficulty === 'facil' ? (
             <>
-              <label>
-                Estado
-                <select value={stateAnswer} onChange={(e) => setStateAnswer(e.target.value)}>
-                  <option value="">Selecione...</option>
-                  {stateOptions.map((o) => <option key={o}>{o}</option>)}
-                </select>
-              </label>
-              <label>
-                Capital
-                <select value={capitalAnswer} onChange={(e) => setCapitalAnswer(e.target.value)}>
-                  <option value="">Selecione...</option>
-                  {capitalOptions.map((o) => <option key={o}>{o}</option>)}
-                </select>
-              </label>
+              <OptionButtons label="Estado" options={stateOptions} value={stateAnswer} onChange={setStateAnswer} />
+              <OptionButtons label="Capital" options={capitalOptions} value={capitalAnswer} onChange={setCapitalAnswer} />
             </>
           ) : (
             <>
@@ -232,13 +248,46 @@ export default function App() {
           )}
         </div>
 
-        <div className="actions-row">
-          <button className="btn btn-primary" onClick={submitRound} disabled={!normalizeText(stateAnswer) || !normalizeText(capitalAnswer)}>Confirmar resposta</button>
-          <button className="btn btn-secondary" onClick={() => setMode('study')}>Modo estudo</button>
+        <div className="actions-row game-actions">
+          <button className="btn btn-primary" onClick={submitRound} disabled={!normalizeText(stateAnswer) || !normalizeText(capitalAnswer)}>Confirmar</button>
         </div>
 
         <p className="feedback" aria-live="polite">{feedback}</p>
       </section>
+
+      {showSettings && (
+        <div className="overlay" role="dialog" aria-modal="true" aria-label="Configurações">
+          <section className="panel overlay-panel">
+            <div className="overlay-head">
+              <h3>Configurações</h3>
+              <button className="btn btn-secondary" onClick={() => setShowSettings(false)}>Fechar</button>
+            </div>
+            <label className="inline-field" htmlFor="difficulty-select">
+              Dificuldade
+              <select id="difficulty-select" value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
+                <option value="facil">Fácil (múltipla escolha)</option>
+                <option value="medio">Médio (assistido)</option>
+                <option value="dificil">Difícil (livre)</option>
+              </select>
+            </label>
+          </section>
+        </div>
+      )}
+
+      {showOptions && (
+        <div className="overlay" role="dialog" aria-modal="true" aria-label="Opções">
+          <section className="panel overlay-panel">
+            <div className="overlay-head">
+              <h3>Opções</h3>
+              <button className="btn btn-secondary" onClick={() => setShowOptions(false)}>Fechar</button>
+            </div>
+            <div className="overlay-actions">
+              <button className="btn btn-secondary" onClick={() => { setShowOptions(false); setMode('study') }}>Modo estudo</button>
+              <button className="btn btn-secondary" onClick={() => { setShowOptions(false); resetGame('menu') }}>Voltar ao menu</button>
+            </div>
+          </section>
+        </div>
+      )}
     </main>
   )
 }

@@ -31,12 +31,23 @@ body {
   min-height: 100vh;
 }
 
+body.game-active {
+  overflow: hidden;
+}
+
 .container {
   width: min(1040px, 100% - 2rem);
   margin: 0 auto;
   padding: var(--space-5) 0 calc(var(--space-5) + var(--space-2));
   display: grid;
   gap: var(--space-4);
+}
+
+.game-container {
+  height: 100dvh;
+  max-height: 100dvh;
+  padding-block: max(0.8rem, env(safe-area-inset-top)) max(0.8rem, env(safe-area-inset-bottom));
+  gap: var(--space-2);
 }
 
 .panel {
@@ -52,6 +63,11 @@ body {
   display: grid;
   gap: var(--space-3);
   box-shadow: var(--shadow-2);
+}
+
+.game-hero {
+  gap: var(--space-2);
+  padding-block: 0.9rem;
 }
 
 .eyebrow {
@@ -76,16 +92,27 @@ h2 {
   letter-spacing: -0.015em;
 }
 
+h3 {
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
+}
+
 .muted {
   color: var(--muted);
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
 .topline {
   display: flex;
   gap: var(--space-3);
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.topline-actions {
+  display: flex;
+  gap: 0.5rem;
   flex-wrap: wrap;
 }
 
@@ -98,20 +125,20 @@ h2 {
 .chip {
   display: grid;
   gap: 0.1rem;
-  padding: 0.65rem 0.85rem;
+  padding: 0.52rem 0.78rem;
   border-radius: 999px;
   border: 1px solid var(--line);
   background: var(--surface-soft);
-  min-width: 6rem;
+  min-width: 5.4rem;
 }
 
 .chip strong {
-  font-size: 1.05rem;
+  font-size: 1rem;
   line-height: 1;
 }
 
 .chip small {
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--muted);
@@ -133,12 +160,26 @@ h2 {
   transition: width 260ms ease;
 }
 
+.game-panel {
+  display: grid;
+  grid-template-rows: auto auto minmax(170px, 1fr) auto auto auto;
+  gap: var(--space-2);
+  min-height: 0;
+  overflow: hidden;
+}
+
 .map-panel {
-  margin-top: var(--space-3);
+  margin-top: var(--space-2);
   border-radius: var(--radius-m);
   padding: var(--space-2);
   border: 1px solid var(--line);
   background: linear-gradient(180deg, #f5f8ff, #eef2f8);
+}
+
+.game-map-panel {
+  margin-top: 0;
+  min-height: 0;
+  display: grid;
 }
 
 .mapa {
@@ -146,6 +187,10 @@ h2 {
   max-height: 62vh;
   border-radius: calc(var(--radius-m) - 2px);
   display: block;
+}
+
+.game-map-panel .mapa {
+  max-height: min(34dvh, 320px);
 }
 
 .estado {
@@ -194,7 +239,6 @@ h2 {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-3);
-  margin-top: var(--space-3);
 }
 
 label {
@@ -206,6 +250,50 @@ label {
 
 .inline-field {
   min-width: min(330px, 100%);
+}
+
+.option-group {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.option-group legend {
+  font-weight: 650;
+  font-size: 0.92rem;
+  margin-bottom: 0.45rem;
+}
+
+.option-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.option-btn {
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--text);
+  font: inherit;
+  font-weight: 560;
+  padding: 0.66rem 0.72rem;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease, transform 120ms ease;
+}
+
+.option-btn:hover {
+  border-color: #b8c7e3;
+  transform: translateY(-1px);
+}
+
+.option-btn.is-selected {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 13%, #fff);
+  color: color-mix(in srgb, var(--accent-strong) 92%, #101e3b);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent);
 }
 
 input,
@@ -254,12 +342,45 @@ select:hover { border-color: #bbc4d3; }
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
-  margin-top: var(--space-3);
+}
+
+.game-actions {
+  margin-top: 0.25rem;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(10, 15, 25, 0.44);
+  backdrop-filter: blur(5px);
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.overlay-panel {
+  width: min(520px, 100%);
+  display: grid;
+  gap: 1rem;
+}
+
+.overlay-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.overlay-actions {
+  display: grid;
+  gap: 0.6rem;
 }
 
 button:focus-visible,
 select:focus-visible,
 input:focus-visible,
+.option-btn:focus-visible,
 .estado:focus-visible {
   outline: 3px solid color-mix(in srgb, var(--accent) 45%, #8db3ff);
   outline-offset: 2px;
@@ -267,17 +388,53 @@ input:focus-visible,
 
 @media (max-width: 760px) {
   .container {
-    width: min(100% - 1rem, 1040px);
+    width: min(100% - 0.9rem, 1040px);
     padding-top: var(--space-3);
     gap: var(--space-3);
   }
 
-  .fields-grid {
-    grid-template-columns: 1fr;
-    gap: var(--space-2);
+  .game-container {
+    width: min(100% - 0.6rem, 1040px);
+    padding-top: max(0.45rem, env(safe-area-inset-top));
+    padding-bottom: max(0.45rem, env(safe-area-inset-bottom));
+    gap: 0.55rem;
   }
 
-  .chip { min-width: 5.2rem; }
+  .game-hero {
+    padding: 0.68rem;
+  }
+
+  .game-panel {
+    padding: 0.75rem;
+    grid-template-rows: auto auto minmax(150px, 1fr) auto auto auto;
+    gap: 0.5rem;
+  }
+
+  .fields-grid {
+    grid-template-columns: 1fr;
+    gap: 0.55rem;
+  }
+
+  .option-buttons {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.35rem;
+  }
+
+  .option-btn {
+    padding: 0.58rem;
+    font-size: 0.89rem;
+  }
+
+  .chip {
+    min-width: 4.85rem;
+    padding: 0.45rem 0.68rem;
+  }
+
+  .topline-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
 
   .btn {
     width: 100%;
@@ -317,10 +474,16 @@ input:focus-visible,
   input,
   select,
   .btn,
-  .btn-secondary {
+  .btn-secondary,
+  .option-btn {
     background: #121722;
     border-color: var(--line);
     color: var(--text);
+  }
+
+  .option-btn.is-selected {
+    background: color-mix(in srgb, var(--accent) 22%, #121722);
+    color: #dce8ff;
   }
 
   .chip,
