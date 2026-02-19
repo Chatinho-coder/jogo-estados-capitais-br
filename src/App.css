@@ -36,6 +36,11 @@ body.game-active {
   overscroll-behavior: none;
 }
 
+body.answer-sheet-open {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 .container {
   width: min(1040px, 100% - 2rem);
   margin: 0 auto;

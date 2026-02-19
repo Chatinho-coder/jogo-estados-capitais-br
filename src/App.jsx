@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
 import { BrazilMap } from './components/BrazilMap'
 import { STATES_DATA, STATES_BY_NAME } from './data/statesData'
@@ -77,6 +77,7 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false)
   const [showOptions, setShowOptions] = useState(false)
   const [showAnswerSheet, setShowAnswerSheet] = useState(false)
+  const lockedScrollYRef = useRef(0)
 
   const current = queue[index]
   const ended = errors >= MAX_ERRORS || index >= queue.length
@@ -95,11 +96,45 @@ export default function App() {
   useEffect(() => {
     if (!showAnswerSheet) return
     const onKeyDown = (e) => {
-      if (e.key === 'Escape') setShowAnswerSheet(false)
+      if (e.key === 'Escape') closeAnswerSheet({ restoreScroll: true })
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [showAnswerSheet])
+
+  useEffect(() => {
+    if (!showAnswerSheet) return
+
+    const scrollY = window.scrollY || window.pageYOffset || 0
+    lockedScrollYRef.current = scrollY
+
+    document.body.classList.add('answer-sheet-open')
+    document.body.style.position = 'fixed'
+    document.body.style.top = `-${scrollY}px`
+    document.body.style.left = '0'
+    document.body.style.right = '0'
+    document.body.style.width = '100%'
+
+    return () => {
+      document.body.classList.remove('answer-sheet-open')
+      document.body.style.position = ''
+      document.body.style.top = ''
+      document.body.style.left = ''
+      document.body.style.right = ''
+      document.body.style.width = ''
+    }
+  }, [showAnswerSheet])
+
+  function closeAnswerSheet({ restoreScroll = true } = {}) {
+    const restoreY = restoreScroll ? lockedScrollYRef.current : 0
+    if (document.activeElement && typeof document.activeElement.blur === 'function') {
+      document.activeElement.blur()
+    }
+    setShowAnswerSheet(false)
+    requestAnimationFrame(() => {
+      window.scrollTo(0, restoreY)
+    })
+  }
 
   function resetGame(newMode = 'menu') {
     setQueue(shuffle(STATES_DATA))
@@ -130,7 +165,7 @@ export default function App() {
     setDraftCapitalAnswer('')
     setStateAnswer('')
     setCapitalAnswer('')
-    setShowAnswerSheet(false)
+    closeAnswerSheet({ restoreScroll: true })
   }
 
   function submitRound(selectedState = stateAnswer, selectedCapital = capitalAnswer) {
@@ -162,7 +197,7 @@ export default function App() {
   function confirmAnswerDraft() {
     setStateAnswer(draftStateAnswer)
     setCapitalAnswer(draftCapitalAnswer)
-    setShowAnswerSheet(false)
+    closeAnswerSheet({ restoreScroll: true })
     submitRound(draftStateAnswer, draftCapitalAnswer)
   }
 
@@ -272,7 +307,7 @@ export default function App() {
           <section className="panel overlay-panel answer-panel">
             <div className="overlay-head">
               <h3>Responder rodada</h3>
-              <button className="btn btn-secondary" onClick={() => setShowAnswerSheet(false)}>Fechar</button>
+              <button className="btn btn-secondary" onClick={() => closeAnswerSheet({ restoreScroll: true })}>Fechar</button>
             </div>
 
             <div className="question-context">
