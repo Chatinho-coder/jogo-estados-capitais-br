@@ -423,13 +423,24 @@ select:hover { border-color: #bbc4d3; }
   gap: 0.75rem;
 }
 
-.question-context {
+.question-mini-state {
   display: grid;
-  gap: 0.35rem;
-  padding: 0.85rem;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-m);
-  background: var(--surface-soft);
+  place-items: center;
+  min-height: 120px;
+  margin-top: -0.2rem;
+  margin-bottom: -0.1rem;
+}
+
+.mini-state {
+  width: min(120px, 34vw);
+  height: auto;
+  display: block;
+}
+
+.mini-state-shape {
+  fill: color-mix(in srgb, var(--highlight) 80%, white);
+  stroke: color-mix(in srgb, var(--accent) 70%, #1d2c4d);
+  stroke-width: 2.5;
 }
 
 .answer-actions {
@@ -536,9 +547,13 @@ input:focus-visible,
   }
 
   .chip,
-  .review-item,
-  .question-context {
+  .review-item {
     background: #141a27;
+  }
+
+  .mini-state-shape {
+    fill: color-mix(in srgb, var(--highlight) 75%, #2b3d63);
+    stroke: #86afff;
   }
 
   .map-panel {

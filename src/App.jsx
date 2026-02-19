@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
-import { BrazilMap } from './components/BrazilMap'
+import { BrazilMap, MiniHighlightedState } from './components/BrazilMap'
 import { STATES_DATA, STATES_BY_NAME } from './data/statesData'
 import { includesNormalized, normalizeText } from './utils/text'
 import { isCorrectAnswer, scoreRound } from './utils/validation'
@@ -310,8 +310,8 @@ export default function App() {
               <button className="btn btn-secondary" onClick={() => closeAnswerSheet({ restoreScroll: true })}>Fechar</button>
             </div>
 
-            <div className="question-context">
-              <p className="muted">Estado destacado no mapa</p>
+            <div className="question-mini-state" aria-hidden="true">
+              <MiniHighlightedState stateName={current?.estado} />
             </div>
 
             <div className="fields-grid answer-fields">
