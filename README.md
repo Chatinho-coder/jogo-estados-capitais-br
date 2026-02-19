@@ -36,6 +36,32 @@ Jogo educativo web (pt-BR) para aprender **estados e capitais do Brasil** com ma
 - `npm run build`
 - `npm run test`
 
+## Mobile UX principles
+Aplicado a partir de boas práticas de HIG/Material/MDN/WCAG e feedback de uso real em celular:
+
+1. **Uma ação principal por vez**
+   - Em partida ativa, a tela mostra principalmente **mapa + HUD compacto + CTA “Resposta”**.
+   - Configurações e ações secundárias ficam fora da tela principal, em modal.
+
+2. **Responder em contexto full-screen**
+   - A resposta abre em um painel full-screen mobile-first com contexto da rodada (estado destacado).
+   - Fluxo explícito: escolher resposta → **Confirmar**.
+   - Rascunhos são preservados ao fechar o painel; **Cancelar** limpa o rascunho.
+
+3. **Ergonomia de toque e legibilidade**
+   - Alvos de toque com mínimo prático de ~44–48px.
+   - Inputs, botões e opções com contraste forte e estado de foco/seleção visível.
+   - Tamanhos de fonte de formulário em `16px` para evitar zoom automático no iOS ao focar campos.
+
+4. **Sem scroll vertical durante gameplay**
+   - Shell do jogo em `100dvh` com `safe-area` (`env(safe-area-inset-*)`) e `overflow` controlado.
+   - A imersão fica no mapa e no painel de resposta, evitando layout quebrado por rolagem acidental.
+
+5. **Zoom: prevenir acidentes sem quebrar acessibilidade**
+   - Não usamos `user-scalable=no` por padrão, para preservar acessibilidade.
+   - Reduzimos zoom acidental com layout touch-first, controles maiores e tipografia adequada.
+   - Viewport inclui `viewport-fit=cover` e ajuste de teclado com `interactive-widget=resizes-content`.
+
 ## Design refresh
 - Interface redesenhada com linguagem visual premium e minimalista inspirada em produtos Apple.
 - Novo design system com escala de espaçamento, tipografia mais consistente, radii/sombras coesos e paleta neutra com um acento azul.

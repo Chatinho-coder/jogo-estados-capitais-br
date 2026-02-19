@@ -15,11 +15,12 @@ function getOptions(current, key) {
   return shuffle([current[key], ...shuffle(STATES_DATA.filter((s) => s.uf !== current.uf)).slice(0, 3).map((s) => s[key])])
 }
 
-function GameHeader({ score, streak, errors, index, total }) {
+function GameHeader({ score, streak, errors, index, total, onOpenMenu }) {
   return (
     <header className="hero panel game-hero">
-      <div>
+      <div className="game-title-row">
         <p className="eyebrow">GeoMestre Brasil</p>
+        <button className="btn btn-quiet" onClick={onOpenMenu} aria-label="Abrir menu do jogo">⋯</button>
       </div>
       <div className="hud" aria-label="Indicadores de jogo">
         <span className="chip"><strong>{score}</strong><small>pontos</small></span>
@@ -71,8 +72,11 @@ export default function App() {
   const [wrongAnswers, setWrongAnswers] = useState([])
   const [stateAnswer, setStateAnswer] = useState('')
   const [capitalAnswer, setCapitalAnswer] = useState('')
+  const [draftStateAnswer, setDraftStateAnswer] = useState('')
+  const [draftCapitalAnswer, setDraftCapitalAnswer] = useState('')
   const [showSettings, setShowSettings] = useState(false)
   const [showOptions, setShowOptions] = useState(false)
+  const [showAnswerSheet, setShowAnswerSheet] = useState(false)
 
   const current = queue[index]
   const ended = errors >= MAX_ERRORS || index >= queue.length
@@ -80,13 +84,22 @@ export default function App() {
   const stateOptions = useMemo(() => (current ? getOptions(current, 'estado') : []), [current])
   const capitalOptions = useMemo(() => (current ? getOptions(current, 'capital') : []), [current])
 
-  const stateSuggestions = useMemo(() => STATES_DATA.filter((s) => includesNormalized(stateAnswer, s.estado)).slice(0, 6), [stateAnswer])
-  const capitalSuggestions = useMemo(() => STATES_DATA.filter((s) => includesNormalized(capitalAnswer, s.capital)).slice(0, 6), [capitalAnswer])
+  const stateSuggestions = useMemo(() => STATES_DATA.filter((s) => includesNormalized(draftStateAnswer, s.estado)).slice(0, 6), [draftStateAnswer])
+  const capitalSuggestions = useMemo(() => STATES_DATA.filter((s) => includesNormalized(draftCapitalAnswer, s.capital)).slice(0, 6), [draftCapitalAnswer])
 
   useEffect(() => {
     document.body.classList.toggle('game-active', mode === 'game' && !ended)
     return () => document.body.classList.remove('game-active')
   }, [mode, ended])
+
+  useEffect(() => {
+    if (!showAnswerSheet) return
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') setShowAnswerSheet(false)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [showAnswerSheet])
 
   function resetGame(newMode = 'menu') {
     setQueue(shuffle(STATES_DATA))
@@ -98,14 +111,31 @@ export default function App() {
     setWrongAnswers([])
     setStateAnswer('')
     setCapitalAnswer('')
+    setDraftStateAnswer('')
+    setDraftCapitalAnswer('')
+    setShowAnswerSheet(false)
     setShowOptions(false)
     setShowSettings(false)
     setMode(newMode)
   }
 
-  function submitRound() {
-    const stateOk = isCorrectAnswer(stateAnswer, current.estado)
-    const capitalOk = isCorrectAnswer(capitalAnswer, current.capital)
+  function openAnswerSheet() {
+    setDraftStateAnswer(stateAnswer)
+    setDraftCapitalAnswer(capitalAnswer)
+    setShowAnswerSheet(true)
+  }
+
+  function cancelAnswerDraft() {
+    setDraftStateAnswer('')
+    setDraftCapitalAnswer('')
+    setStateAnswer('')
+    setCapitalAnswer('')
+    setShowAnswerSheet(false)
+  }
+
+  function submitRound(selectedState = stateAnswer, selectedCapital = capitalAnswer) {
+    const stateOk = isCorrectAnswer(selectedState, current.estado)
+    const capitalOk = isCorrectAnswer(selectedCapital, current.capital)
     const round = scoreRound({ stateOk, capitalOk, streak })
 
     if (stateOk && capitalOk) {
@@ -124,7 +154,16 @@ export default function App() {
       setIndex((i) => i + 1)
       setStateAnswer('')
       setCapitalAnswer('')
+      setDraftStateAnswer('')
+      setDraftCapitalAnswer('')
     }, 450)
+  }
+
+  function confirmAnswerDraft() {
+    setStateAnswer(draftStateAnswer)
+    setCapitalAnswer(draftCapitalAnswer)
+    setShowAnswerSheet(false)
+    submitRound(draftStateAnswer, draftCapitalAnswer)
   }
 
   if (mode === 'menu') {
@@ -209,51 +248,81 @@ export default function App() {
 
   return (
     <main className="container game-container">
-      <GameHeader score={score} streak={streak} errors={errors} index={index} total={queue.length} />
+      <GameHeader score={score} streak={streak} errors={errors} index={index} total={queue.length} onOpenMenu={() => setShowOptions(true)} />
 
-      <section className="panel game-panel">
-        <div className="topline">
-          <h2>Rodada {index + 1}</h2>
-          <div className="topline-actions">
-            <button className="btn btn-secondary" onClick={() => setShowSettings(true)}>Configurações</button>
-            <button className="btn btn-secondary" onClick={() => setShowOptions(true)}>Opções</button>
-          </div>
+      <section className="panel game-panel" aria-label="Rodada atual">
+        <div className="round-title">
+          <h2>Estado destacado</h2>
+          <p className="muted">Rodada {index + 1}</p>
         </div>
-
-        <p className="muted">Qual é o estado destacado e qual a sua capital?</p>
 
         <div className="map-panel game-map-panel">
           <BrazilMap highlightedState={current?.estado} />
         </div>
 
-        <div className="fields-grid">
-          {difficulty === 'facil' ? (
-            <>
-              <OptionButtons label="Estado" options={stateOptions} value={stateAnswer} onChange={setStateAnswer} />
-              <OptionButtons label="Capital" options={capitalOptions} value={capitalAnswer} onChange={setCapitalAnswer} />
-            </>
-          ) : (
-            <>
-              <label>
-                Estado
-                <input value={stateAnswer} onChange={(e) => setStateAnswer(e.target.value)} list={difficulty === 'medio' ? 'estados-list' : undefined} />
-              </label>
-              <label>
-                Capital
-                <input value={capitalAnswer} onChange={(e) => setCapitalAnswer(e.target.value)} list={difficulty === 'medio' ? 'capitais-list' : undefined} />
-              </label>
-              <datalist id="estados-list">{stateSuggestions.map((s) => <option key={s.uf} value={s.estado} />)}</datalist>
-              <datalist id="capitais-list">{capitalSuggestions.map((s) => <option key={s.capital} value={s.capital} />)}</datalist>
-            </>
-          )}
-        </div>
+        <p className="feedback" aria-live="polite">{feedback || 'Toque em “Resposta” para abrir o painel de resposta.'}</p>
 
-        <div className="actions-row game-actions">
-          <button className="btn btn-primary" onClick={submitRound} disabled={!normalizeText(stateAnswer) || !normalizeText(capitalAnswer)}>Confirmar</button>
+        <div className="cta-wrap">
+          <button className="btn btn-primary btn-answer" onClick={openAnswerSheet}>Resposta</button>
         </div>
-
-        <p className="feedback" aria-live="polite">{feedback}</p>
       </section>
+
+      {showAnswerSheet && (
+        <div className="overlay answer-overlay" role="dialog" aria-modal="true" aria-label="Responder rodada">
+          <section className="panel overlay-panel answer-panel">
+            <div className="overlay-head">
+              <h3>Responder rodada</h3>
+              <button className="btn btn-secondary" onClick={() => setShowAnswerSheet(false)}>Fechar</button>
+            </div>
+
+            <div className="question-context">
+              <p className="muted">Estado destacado no mapa:</p>
+              <strong>{current?.estado}</strong>
+            </div>
+
+            <div className="fields-grid answer-fields">
+              {difficulty === 'facil' ? (
+                <>
+                  <OptionButtons label="Estado" options={stateOptions} value={draftStateAnswer} onChange={setDraftStateAnswer} />
+                  <OptionButtons label="Capital" options={capitalOptions} value={draftCapitalAnswer} onChange={setDraftCapitalAnswer} />
+                </>
+              ) : (
+                <>
+                  <label>
+                    Estado
+                    <input
+                      value={draftStateAnswer}
+                      onChange={(e) => setDraftStateAnswer(e.target.value)}
+                      list={difficulty === 'medio' ? 'estados-list' : undefined}
+                    />
+                  </label>
+                  <label>
+                    Capital
+                    <input
+                      value={draftCapitalAnswer}
+                      onChange={(e) => setDraftCapitalAnswer(e.target.value)}
+                      list={difficulty === 'medio' ? 'capitais-list' : undefined}
+                    />
+                  </label>
+                  <datalist id="estados-list">{stateSuggestions.map((s) => <option key={s.uf} value={s.estado} />)}</datalist>
+                  <datalist id="capitais-list">{capitalSuggestions.map((s) => <option key={s.capital} value={s.capital} />)}</datalist>
+                </>
+              )}
+            </div>
+
+            <div className="answer-actions">
+              <button className="btn btn-secondary" onClick={cancelAnswerDraft}>Cancelar</button>
+              <button
+                className="btn btn-primary"
+                onClick={confirmAnswerDraft}
+                disabled={!normalizeText(draftStateAnswer) || !normalizeText(draftCapitalAnswer)}
+              >
+                Confirmar
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
 
       {showSettings && (
         <div className="overlay" role="dialog" aria-modal="true" aria-label="Configurações">
@@ -282,6 +351,7 @@ export default function App() {
               <button className="btn btn-secondary" onClick={() => setShowOptions(false)}>Fechar</button>
             </div>
             <div className="overlay-actions">
+              <button className="btn btn-secondary" onClick={() => { setShowOptions(false); setShowSettings(true) }}>Configurações</button>
               <button className="btn btn-secondary" onClick={() => { setShowOptions(false); setMode('study') }}>Modo estudo</button>
               <button className="btn btn-secondary" onClick={() => { setShowOptions(false); resetGame('menu') }}>Voltar ao menu</button>
             </div>
