@@ -276,8 +276,7 @@ export default function App() {
             </div>
 
             <div className="question-context">
-              <p className="muted">Estado destacado no mapa:</p>
-              <strong>{current?.estado}</strong>
+              <p className="muted">Estado destacado no mapa</p>
             </div>
 
             <div className="fields-grid answer-fields">
